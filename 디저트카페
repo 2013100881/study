@@ -1,0 +1,153 @@
+package homework;
+
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class disert_cafe5 {
+	static int max;// 가장 큰 디저트 값이 들어갈 곳
+	// int N;
+	static int v;
+	// static int group;// 1이면 더이상 진행하지 말고 리턴 시키기
+	// static ArrayList path = new ArrayList();
+
+	public static void main(String args[]) throws Exception {
+		Scanner sc = new Scanner(System.in);
+		int T = sc.nextInt();
+
+		for (v = 0; v < T; v++) {
+			max = -1;
+			int N = sc.nextInt(); // 행의 길이
+			int cafe[][] = new int[N][N];// 디저트 카페 거리
+
+			for (int i = 0; i < N; i++) {
+				for (int j = 0; j < N; j++) {
+					cafe[i][j] = sc.nextInt();
+				}
+			} // 카페 거리 스캔 완료
+
+			// 1. 모든 행렬에서 다 시작해 본다.
+			for (int i = 0; i < N; i++) {
+				for (int j = 0; j < N; j++) {
+					ArrayList<Integer> list = new ArrayList();
+					list.add(cafe[i][j]);
+					ArrayList dr = new ArrayList();
+					if (i + 1 < N && j - 1 >= 0 && cafe[i][j] != cafe[i + 1][j - 1]) {
+						dr.add(1);
+						cal(dr,i + 1, j - 1, list, 1, 0, N, cafe, i, j); // 모든 행렬에서 메소드 돌려보기
+						dr.clear();
+						// cal(int i, int j, ArrayList disert, int direction, int curb, int N, int
+						// cafe[][], int ii, int jj)
+						// 현재 위치, 여태껏 먹은 디저트 숫자, 방금 온 방향, 방향 꺾은 횟수, 행렬 길이, 카페 행렬, 처음 출발한 위치
+
+					} // 1. 왼쪽 아래로 올라가는 경우에 칸이 있을 경우<->오른쪽 위(3)
+					if (i - 1 >= 0 && j + 1 < N && cafe[i][j] != cafe[i - 1][j + 1]) {
+						dr.add(-1);
+						cal(dr, i - 1, j + 1, list, -1, 0, N, cafe, i, j);
+						dr.clear();
+					} // 3. 오른쪽 위로 올라가는 경우에 칸이 있을 경우
+				}
+			} // 메소드 돌리기 끝
+
+			System.out.println("#" + (v + 1) + " " + max);
+
+		} // 테스트 케이스 완료
+	}// main
+
+	static void cal(ArrayList dr, int i, int j, ArrayList disert, int direction, int curb, int N, int cafe[][], int ii,
+			int jj) {
+		// 서로 다른 방향만 있는가?
+		// 1.
+		if (curb > 3) {
+			return;
+		} // 3번 이상 꺾었을 때,
+
+		if (curb == 3 && i == ii && j == jj) {
+			int result = 0;
+			result = disert.size();
+
+			max = Math.max(result, max); // 큰 수를 저장한다.
+			return;
+		} // 3번 꺾었고, 제자리로 돌아왔을 때,
+
+		sub_cal(i+1, j-1, 1, dr,  i,  j,  disert,  direction, curb,  N,  cafe, ii,  jj); 
+		sub_cal(i-1, j-1, 2, dr,  i,  j,  disert,  direction, curb,  N,  cafe, ii,  jj); 
+		sub_cal(i-1, j+1, -1, dr,  i,  j,  disert,  direction, curb,  N,  cafe, ii,  jj); 
+		sub_cal(i+1, j+1, -2, dr,  i,  j,  disert,  direction, curb,  N,  cafe, ii,  jj); 
+		return;
+	}// cal 함수,
+	
+	public static void sub_cal(int sub_i, int sub_j, int go_direction, ArrayList dr, int i, int j, ArrayList disert, int direction, int curb, int N, int cafe[][],
+			int ii, int jj) {
+		// 4.//1. 왼쪽 아래로 내려가는 경우에 칸이 있을 경우 (1) 다음 칸에 자리가 있는지 확인
+		if (sub_i < N && sub_i>=0 && sub_j<N && sub_j >= 0) {
+			if (cal2(dr, go_direction) == 1) {
+			} else {
+				dr.add(direction);
+				// 4-1.여태껏 먹은 과자들 중, 앞으로 갈 과자와 같은 과자가 있으면 표시하고 가지 않는다.
+				int flag = 0;
+				for (int k = 0; k < disert.size(); k++) {
+					if ((int) disert.get(k) == cafe[sub_i][sub_j]) {
+						flag = 1;
+					} // 여태껏 먹은 과자들 중, 앞으로 갈 과자와 같은 과자가 있으면 가지 않는다.
+				}
+				if (cafe[i][j] == cafe[sub_i][sub_j]) {
+					flag = 1;
+				}
+
+				// 4-2. (2)여태껏 먹은 과자들 중, 앞으로 갈 과자와 같은 과자가 있으면 가지 않는다. (3) 방금 온 곳으로 가지 않는다.
+				if (direction == (go_direction*(-1))) {
+
+				} // 왼쪽 아리에서 올라왔으면 원래대로 돌아가는 것이므로 갈 수 없다.
+				else {
+
+					// 5-1. 여태껏 온 방향와 이제 갈 방향이 다르면 커브를 +1 한다.
+					if (direction != go_direction) {
+						curb = curb + 1;
+					}
+
+					// 5-2. 메소드를 부른다.
+					if (curb == 3 &&sub_i == ii && sub_j == jj && flag == 1) {
+						disert.add(cafe[i][j]);
+						cal(dr,sub_i, sub_j, disert, go_direction, curb, N, cafe, ii, jj);
+						disert.remove(disert.size() - 1);
+					}
+					if (flag != 1) {
+						disert.add(cafe[i][j]);
+						cal(dr, sub_i,sub_j, disert,go_direction , curb, N, cafe, ii, jj);
+						disert.remove(disert.size() - 1);
+					}
+					if (direction != go_direction) {
+						curb = curb - 1;
+					}
+				}
+				dr.remove(dr.size() - 1);
+			}
+		} // 1. 오른쪽 위로 올라가는 경우에 칸이 있을 경우
+	}
+
+
+	//방향이 바뀔때, 앞에서 나왔던 방향이면, 사각형이 완성되지 못하므로 사각형이 불가한 방향이 되면, 실행하지 않는다.
+	public static int cal2(ArrayList dr, int direction) {
+		// 1. 단어 하나마다 체크하기
+		int group = 0;
+		// 2-1. 이 글자가 앞의 글자와 연속된 경우
+		if ((int) dr.get(dr.size() - 1) == direction) {
+
+		} // if,2-1 연속된 글자인 경우
+
+		// 2-2. 연속글자가 아닌 경우 여태껏 나온 글자들과 같은 글자가 있는지 확인
+		else {
+			// 3-1. 여태껏 나온 글자들과 같은 글자가 있는지 확인
+			for (int j = 0; j < dr.size() - 1; j++) {
+				if (direction == (int) dr.get(j)) {
+					group = 1;// 이 단어는 그룹단어가 아닌 것으로 두고
+					break;// 리스트 비교 끝
+				} // if 앞에 나왔던 글자가 또 나옴 => 그룹단어 아님
+
+			} // for j - list
+
+		} // else,2-2
+		return group;
+	} // for,1, i-word
+
+}// disert_cafe
